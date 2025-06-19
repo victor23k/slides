@@ -125,6 +125,13 @@ typedef unsigned long Eterm;
 </div>
 </div>
 
+<!--
+
+ChatGPT quiere usar una tagged union.
+ValueType es la tag, y el union type contiene el valor
+
+-->
+
 ---
 
 # ¿Cómo representamos el valor?
@@ -172,6 +179,14 @@ typedef unsigned long Eterm;
 </div>
 </div>
 
+<!--
+
+ERTS utiliza una palabra de memoria para representar el tag.
+En el caso de los inmediatos, también guarda el valor en este Eterm.
+En otros casos, puede guardar información adicional.
+
+-->
+
 ---
 
 # BEAM y ERTS
@@ -181,6 +196,16 @@ typedef unsigned long Eterm;
 ![h:500px](assets/erl_stack.svg)
 
 </div>
+
+<!--
+
+BEAM only refers to the Abstract Machine model used for compiling, shipping, and executing Erlang code in the form of BEAM bytecode instructions
+
+ERTS: automatic memory management, efficient I/O, process scheduling, multicore utilization, OS signals
+
+Erlang/OTP by Ericsson es la implementación estándar de Erlang Runtime System y BEAM.
+
+-->
 
 ---
 
@@ -192,6 +217,20 @@ typedef unsigned long Eterm;
 ![w:850px](assets/primary_tag_white.svg)
 
 </div>
+
+<!--
+
+Header word es la primera palabra en la heap de un boxed term.
+
+Las listas se usan tanto que se le da una tag primaria para que estén optimizadas.
+
+Esto habla de lo importantes que son las listas.
+
+Los inmediatos son autocontenidos, ya que tienen el valor dentro del Eterm. 
+
+Para el resto de terminos se hace este box que apunta al término real, que incluye otros tags.
+
+-->
 
 ---
 
@@ -222,6 +261,22 @@ typedef unsigned long Eterm;
 </div>
 </div>
 
+<!--
+
+Pid -> identificador de los procesos de Erlang.
+
+Port -> identificador para la conexión de Erlang con el mundo exterior. Por ejemplo un socket o un file descriptor
+
+Small integer -> 60 bits en sistemas de 64 bits.
+
+Atom -> ahora lo vemos
+
+[] -> Lista vacía o NIL. Importante que solo ocupe una palabra en memoria, se comprueba muy rápido. Segundo elemento de
+listas que está muy optimizado.
+
+-->
+
+
 ---
 
 # Átomos
@@ -230,6 +285,7 @@ typedef unsigned long Eterm;
 - Parecido a string interning.
 - `index` + `tag`
 - Comparaciones muy rápidas, solo se compara el índice.
+
 
 ---
 
@@ -242,11 +298,21 @@ Dos palabras consecutivas en la heap:
 - head
 - tail
 
+<!--
+
+Cons es un término heredado de LISP que construye objetos de memoria que contienen dos valores o punteros a valores.
+
+De esta forma tenemos la estructura de lista enlazada.
+
+No tiene por qué ser memoria contigua.
+
+-->
+
 ---
 
 # Listas "proper"
 
-Tail contiene un puntero a otra `cons` o `[]`. 
+Tail contiene un puntero a otro `cons` o `[]`. 
 
 ```elixir
 iex(1)> [:a | [:b | []]]
@@ -255,12 +321,22 @@ iex(1)> [:a | [:b | []]]
 
 # Listas "improper"
 
-La tail realmente puede ser cualquier term, lo que constituiría una "improper list".
+La tail realmente puede ser cualquier term.
 
 ```elixir
 iex(2)> [:a | :b]
 [:a | :b ]
 ```
+
+<!--
+
+Según cómo construyemos las listas las podremos usar de una forma u otra.
+
+El ejemplo de arriba ocupa 2 palabras más en memoria
+(cons :a (cons :b [])) 
+(cons :a :b)
+
+-->
 
 ---
 
@@ -288,6 +364,17 @@ iex(6)> IO.iodata_to_binary(iolist)
 "abcde"
 ```
 
+<!--
+
+Explicar qué es una IO list
+
+Otra manera de hacer el segundo ejemplo es [item | acc] y hacer reverse al final.
+
+No tengo claro cuál de las dos maneras es más eficiente, pero en código he visto la versión con el reverse en varios
+sitios.
+
+-->
+
 ---
 
 # IO lists
@@ -295,6 +382,14 @@ iex(6)> IO.iodata_to_binary(iolist)
 - Se puede añadir un elemento en tiempo constante.
 - `Phoenix`: motor de plantillas `HEEx`.
 - Optimizadas para operaciones de entrada y salida.
+
+<!--
+
+Hacer un pequeño recap.
+
+Por qué están optimizadas para IO?
+
+-->
 
 ---
 
@@ -311,6 +406,14 @@ struct iovec {
     size_t iov_len;     /* Number of bytes to transfer */
 };
 ```
+
+<!--
+
+Las iolist constituyen fácilmente un iovec, sin copiar memoria.
+
+De esta manera podemos utilizar estas llamadas de sistema.
+
+-->
 
 ---
 
@@ -329,19 +432,28 @@ struct iovec {
 - Tuplas
 - Refs
 - Funciones
-- Binarios
+- Bitstrings
 - Mapas
 
 </div>
 </div>
 
+<!--
+
+Refs son como los pids pero para tareas o cualquier otro elemento que queramos identificar.
+
+Funciones se pueden asignar a una variable.
+
+Vamos a ver solamente tuplas y bitstrings. Los dos son arrays porque es memoria contigua.
+
+-->
+
 ---
 
 # Tuplas
 
-- Array de terms
-- Memoria contigua 
-- Longitud máxima: `16_777_215`
+- Array de terms.
+- Longitud máxima: `16_777_215`.
 
   > Elements in a tuple - The maximum number of elements in a tuple is 16,777,215 (24-bit unsigned integer).
 
@@ -355,7 +467,7 @@ struct iovec {
 
 # Bitstrings y binarios
 
-- Array inmutable de bytes
+- Array inmutable de bytes.
 - Los binarios son bitstrings con tamaño divisible por 8.
 - En Elixir las strings están implementadas como binarios.
 
@@ -370,8 +482,14 @@ struct iovec {
 # Heap bitstring
 
 - Se guarda en la memoria heap del proceso.
-- Menor de 64 bytes.
+- Bitstrings pequeños - `< 64 bytes`.
 - Para mandar a otro proceso, hay que copiar.
+
+<!--
+
+Esto no lo hemos comentado pero ERTS crea un espacio de memoria heap para cada proceso de Erlang.
+
+-->
 
 ---
 
@@ -474,6 +592,14 @@ jugar un partido relevante.
 A mí personalmente me ayuda intentar comprender las herramientas que uso: me da confianza a usarlas. 
 
 -->
+
+---
+
+# Referencias
+
+- https://github.com/happi/theBeamBook
+- https://www.erlang.org/doc/readme.html
+- https://github.com/erlang/otp
 
 ---
 
