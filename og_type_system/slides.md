@@ -12,21 +12,49 @@ style: |
 
 # Los Tipos de Erlang y Elixir
 
+<div style="font-size: 36px;">
+
+```elixir
+def speaker do
+  %{
+    name: "Víctor Fernández",
+    city: "Madrid",
+    company: "Doofinder",
+    github: "github.com/victor23k"
+  }
+end
+```
+
+</div>
+
+<!--
+
+Los tipos reales, no los nuevos tipos.
+Tipo suena a dude en un doblaje al español de película americana.
+
+-->
+
 ---
 
 # Qué es un sistema de tipos?
 
-- Un tipo es una propiedad asociada a un término (term)
-- Sistema de tipos `!=` Comprobación de tipos
-- Todos los lenguajes tienen sistema de tipos
+- Un tipo es una propiedad asociada a un término (term).
+- Sistema de tipos `!=` Comprobación de tipos.
+- Todos los lenguajes tienen sistema de tipos.
+
+<!--
+
+Un sistema de tipos define los tipos disponibles y los asocia a los términos.
+
+-->
 
 ---
 
 # Comprobación de tipos
 
-- Estática `=>` tiempo de compilación
-- Dinámica `=>` tiempo de ejecución
-- Gradual `=>` ambos
+- Estática `=>` tiempo de compilación.
+- Dinámica `=>` tiempo de ejecución.
+- Gradual `=>` ambos. (`Elixir` 👀)
 
 ---
 
@@ -49,6 +77,12 @@ style: |
 
 </div>
 </div>
+
+<!--
+
+Cómo se generan valores para que el sistema de tipos pueda determinar su tipo?
+
+-->
 
 ---
 
@@ -417,3 +451,34 @@ def match({first, second}), do: :tuple
 ```elixir
 {:test, :is_tuple, {:f, 10}, [{:x, 0}, 2]},
 ```
+
+---
+
+# Conclusiones
+
+<div style="font-size:40px">
+
+- Erlang -> 🚬CINE
+- 🇸🇪 -> 📉🌅 -> 📈💻
+
+</div>
+
+<!--
+
+Todo el ecosistema de Erlang y la OTP es brutal. Llevan casi 40 años haciendo esto y entrar en las tripas te hace
+comprender lo complicado que es construir algo así.
+
+Suecia puede ser top 5 en desarrolladores sin ningún problema. Al menos en lo importante, fútbol, llevan 70 años sin
+jugar un partido relevante. 
+
+A mí personalmente me ayuda intentar comprender las herramientas que uso: me da confianza a usarlas. 
+
+-->
+
+---
+
+# Preguntas
+
+---
+
+# Gracias
